@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TAPNext++: What's Next for Tracking Any Point (TAP)?</title>
+  <meta name="description" content="TAPNext++ — CVPR 2026 Findings. Long-horizon point tracking with re-detection robustness.">
+  <link rel="icon" type="image/png" href="static/images/favicon.png">
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro" rel="stylesheet">
+
+  <!-- Bulma CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+
+  <!-- Bulma Carousel -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Wikiki/bulma-carousel@master/dist/css/bulma-carousel.min.css">
+
+  <!-- Font Awesome & Academic Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+
+  <!-- Custom styles -->
+  <link rel="stylesheet" href="static/css/index.css">
+</head>
+<body>
+
+<!-- ===== NAVIGATION ===== -->
+<nav class="navbar" role="navigation" aria-label="main navigation">
+  <div class="navbar-brand">
+    <a role="button" class="navbar-burger" data-target="navbarMenu" aria-label="menu" aria-expanded="false">
+      <span aria-hidden="true"></span>
+      <span aria-hidden="true"></span>
+      <span aria-hidden="true"></span>
+    </a>
+  </div>
+  <div id="navbarMenu" class="navbar-menu">
+    <div class="navbar-start" style="flex-grow: 1; justify-content: center;">
+      <div class="navbar-item has-dropdown is-hoverable">
+        <a class="navbar-link">TAP Research</a>
+        <div class="navbar-dropdown">
+          <a class="navbar-item" href="https://tapvid.github.io/">TAP-Vid Dataset</a>
+          <a class="navbar-item" href="https://deepmind-tapir.github.io/">TAPIR</a>
+          <a class="navbar-item" href="https://robotap.github.io/">RoboTAP</a>
+          <a class="navbar-item" href="https://deepmind-tapir.github.io/blogpost.html">TAPIR Blog Post</a>
+          <a class="navbar-item" href="https://bootstap.github.io/">BootsTAP</a>
+          <a class="navbar-item" href="https://tapvid3d.github.io/">TAPVid-3D</a>
+          <a class="navbar-item" href="https://tap-next.github.io/">TAPNext</a>
+          <hr class="navbar-divider">
+          <a class="navbar-item" style="font-weight:600;" href="#">TAPNext++ (this paper)</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+
+<!-- ===== HERO / TITLE ===== -->
+<section class="hero">
+  <div class="hero-body">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered">
+        <div class="column has-text-centered">
+
+          <h1 class="title is-1 publication-title" style="font-size: 2.4rem; line-height: 1.2;">
+            TAPNext++: What's <em>Next</em> for Tracking Any Point (TAP)?
+          </h1>
+
+          <!-- Conference badge -->
+          <div class="is-size-5 publication-authors" style="margin: 14px auto;">
+            <span class="conf">CVPR 2026 Findings</span>
+          </div>
+
+          <div class="is-size-5 publication-authors">
+            <span class="author-block">Sebastian Jung,&nbsp;</span>
+            <span class="author-block">Artem Zholus,&nbsp;</span>
+            <span class="author-block">Martin Sundermeyer,&nbsp;</span>
+            <span class="author-block">Carl Doersch,&nbsp;</span>
+            <span class="author-block">Ross Goroshin,&nbsp;</span>
+            <span class="author-block">David Joseph Tan,&nbsp;</span>
+            <span class="author-block">Sarath Chandar,&nbsp;</span>
+            <span class="author-block">Rudolph Triebel,&nbsp;</span>
+            <span class="author-block">Federico Tombari</span>
+          </div>
+
+          <!-- Links -->
+          <div class="column has-text-centered" style="margin-top: 12px;">
+            <div class="publication-links">
+              <span class="link-block">
+                <a href="#"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon"><i class="fas fa-file-pdf"></i></span>
+                  <span>Paper</span>
+                </a>
+              </span>
+              <span class="link-block">
+                <a href="#"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon"><i class="ai ai-arxiv"></i></span>
+                  <span>arXiv</span>
+                </a>
+              </span>
+              <span class="link-block">
+                <a href="https://github.com/google-deepmind/tapnet"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon"><i class="fab fa-github"></i></span>
+                  <span>Code</span>
+                </a>
+              </span>
+              <span class="link-block">
+                <a href="#"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon"><i class="fas fa-file-alt"></i></span>
+                  <span>Supplementary</span>
+                </a>
+              </span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ===== TEASER VIDEO ===== -->
+<section class="hero teaser">
+  <div class="container is-max-desktop">
+    <div class="hero-body" style="padding-top: 0; padding-bottom: 2.5rem;">
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; align-items: start;">
+
+        <div style="text-align: center;">
+          <video autoplay muted loop playsinline style="width:100%; border-radius:8px; box-shadow:0 4px 16px rgba(0,0,0,0.13);">
+            <source src="static/videos/custom/clock.mp4" type="video/mp4">
+          </video>
+        </div>
+
+        <div style="text-align: center;">
+          <video autoplay muted loop playsinline style="width:100%; border-radius:8px; box-shadow:0 4px 16px rgba(0,0,0,0.13);">
+            <source src="static/videos/custom/juggling.mp4" type="video/mp4">
+          </video>
+        </div>
+
+        <div style="text-align: center;">
+          <video autoplay muted loop playsinline style="width:100%; border-radius:8px; box-shadow:0 4px 16px rgba(0,0,0,0.13);">
+            <source src="static/videos/comparison/tapnextpp/hiding_hand.mp4" type="video/mp4">
+          </video>
+        </div>
+
+      </div>
+      <h2 class="subtitle has-text-centered" style="margin-top: 20px;">
+        <span class="dnerf">TAPNext++</span> sets a new state of the art for online point tracking —
+        robust over long sequences, after re-detection, and through occlusion.
+      </h2>
+    </div>
+  </div>
+</section>
+
+
+<!-- ===== ABSTRACT ===== -->
+<section class="section">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths">
+        <h2 class="title is-3">Abstract</h2>
+        <div class="content has-text-justified">
+          <p>
+            Tracking-Any-Point (TAP) models aim to track any point through a video —
+            a crucial task in AR/XR and robotics applications. The recently introduced
+            TAPNext approach proposes an end-to-end, recurrent transformer architecture
+            to track points frame-by-frame in a purely online fashion, demonstrating
+            competitive performance at minimal latency.
+          </p>
+          <p>
+            However, we show that TAPNext struggles with longer video sequences and also
+            frequently fails to re-detect query points that reappear after being occluded
+            or leaving the frame. In this work, we present <span class="dnerf">TAPNext++</span>,
+            a model that tracks points in sequences that are orders of magnitude longer
+            while preserving the low memory and compute footprint of the architecture.
+          </p>
+          <p>
+            We train the recurrent video transformer using several data-driven solutions,
+            including training on long 1024-frame sequences enabled by sequence parallelism
+            techniques. We highlight that re-detection performance is a blind spot in the
+            current literature and introduce a new metric, <strong>Re-Detection Average
+            Jaccard (AJ<sub>RD</sub>)</strong>, to explicitly evaluate tracking on
+            re-appearing points. To improve re-detection of points, we introduce tailored
+            geometric augmentations, such as periodic roll that simulates point re-entries,
+            and supervising occluded points. We demonstrate that recurrent transformers can
+            be substantially improved for point tracking and set a new state-of-the-art on
+            multiple benchmarks.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ===== KEY CONTRIBUTIONS ===== -->
+<section class="section" style="padding-top: 0;">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered">
+      <div class="column is-four-fifths">
+        <h2 class="title is-3 has-text-centered">Contributions</h2>
+        <div class="contribution-card">
+          <div class="card-title">1 &nbsp; Long-Sequence Training at Scale</div>
+          <div class="card-body">
+            We enable end-to-end training of TAPNext on <strong>1024-frame sequences</strong>
+            via distributed sequence parallelism — splitting the temporal dimension across
+            multiple GPUs using an efficient associative scan. This reduces GPU communication
+            from 7 sequential steps to just 3, unlocking scalable long-horizon training.
+          </div>
+        </div>
+        <div class="contribution-card">
+          <div class="card-title">2 &nbsp; Kubric-1024: A Long-Sequence Synthetic Dataset</div>
+          <div class="card-body">
+            We introduce <strong>Kubric-1024</strong>, a new large-scale synthetic dataset
+            of 10,000 videos with 1024 frames each, featuring dynamic objects, realistic
+            lighting via Polyhaven HDRIs, and physics-based motion via PyBullet. Crucially,
+            scenes include velocity bumps to prevent static freeze-outs over long sequences.
+          </div>
+        </div>
+        <div class="contribution-card">
+          <div class="card-title">3 &nbsp; Re-Detection Average Jaccard (AJ<sub>RD</sub>)</div>
+          <div class="card-body">
+            We identify re-detection as a blind spot in existing TAP evaluation. We propose
+            AJ<sub>RD</sub>, a metric that measures tracking quality <em>after</em> a point
+            reappears, conditioned on how long it was undetectable. The metric is computed
+            over eligible reappearance events — those that set a new record invisibility
+            duration for a given track.
+          </div>
+        </div>
+        <div class="contribution-card">
+          <div class="card-title">4 &nbsp; Augmentations for Re-Detection Robustness</div>
+          <div class="card-body">
+            We introduce <strong>Roll augmentation</strong> — periodically shifting video
+            frames off one boundary and wrapping them to the opposite side — which forces
+            the model to rely on appearance matching rather than spatial proximity for
+            re-detection. Combined with weighted supervision of occluded points and
+            multi-resolution finetuning, this yields state-of-the-art AJ<sub>RD</sub>
+            on RoboTAP and PointOdyssey.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ===== METHOD ===== -->
+<section class="section alt-bg" style="padding-top: 2.5rem; padding-bottom: 2.5rem;">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths">
+        <h2 class="title is-3">Method</h2>
+
+        <h3 class="title is-5" style="text-align:left; margin-top: 1.5rem;">Distributed Sequence Parallelism</h3>
+        <div class="content has-text-justified">
+          <p>
+            TAPNext processes videos frame-by-frame using alternating ViT and
+            State-Space-Model (SSM) blocks. SSM layers propagate temporal context
+            causally and can be parallelised via an associative scan. We shard the
+            1024-frame input across GPUs — each GPU processes its chunk locally,
+            followed by a logarithmic-time merge across GPU boundaries. This allows
+            forward-and-backward passes in <strong>3 steps on 8 GPUs</strong> instead of
+            7 sequential steps, making 1024-frame end-to-end training practical.
+          </p>
+        </div>
+
+        <h3 class="title is-5" style="text-align:left; margin-top: 1.5rem;">Roll Augmentation</h3>
+        <div class="content has-text-justified">
+          <p>
+            To robustly re-detect points that leave and re-enter the frame, we apply
+            <em>roll augmentation</em>: frames are periodically translated and wrapped
+            around image boundaries with a gap margin. This forces query points to
+            exit one side and re-enter from the opposite side, training the model to
+            rely on <strong>appearance-based re-detection</strong> rather than spatial
+            proximity heuristics. A margin of
+            &radic;(H&sup2;/2 + W&sup2;/2) prevents the same tracking point from
+            appearing at two locations simultaneously.
+          </p>
+        </div>
+
+        <div class="video-grid-2" style="margin-top: 1rem;">
+          <div class="video-cell">
+            <video autoplay muted loop playsinline>
+              <source src="static/videos/roll/roll0.mp4" type="video/mp4">
+            </video>
+            <div class="video-label">Roll augmentation — example 1</div>
+          </div>
+          <div class="video-cell">
+            <video autoplay muted loop playsinline>
+              <source src="static/videos/roll/roll1.mp4" type="video/mp4">
+            </video>
+            <div class="video-label">Roll augmentation — example 2</div>
+          </div>
+        </div>
+
+        <h3 class="title is-5" style="text-align:left; margin-top: 1.5rem;">Occluded Point Supervision</h3>
+        <div class="content has-text-justified">
+          <p>
+            The standard TAP loss only supervises visible points, giving no incentive
+            to predict plausible locations for occluded points — hurting re-detection.
+            We down-weight the occluded-point position loss by 0.2&times; to add a soft
+            supervision signal.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ===== QUALITATIVE COMPARISON ===== -->
+<section class="section alt-bg" style="padding-top: 2.5rem; padding-bottom: 2.5rem;">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-full-width">
+        <h2 class="title is-3">Qualitative Comparison</h2>
+        <div class="content has-text-justified" style="max-width:750px; margin:0 auto 1.5rem;">
+          <p>
+            We highlight the three key strengths of <span class="dnerf">TAPNext++</span>
+            through direct comparison with CoTracker3, Track-On, and BootsTAPNext on
+            curated sequences. 
+          </p>
+        </div>
+
+        <!-- ────────────────────────────────────────────
+             Strength 1 · Long-Horizon Tracking
+             ──────────────────────────────────────────── -->
+        <div class="strength-group">
+          <div class="strength-header">
+            <span class="strength-number">1</span>
+            <h3 class="title is-5 strength-title">Long-Horizon Tracking</h3>
+          </div>
+          <div class="content has-text-justified" style="max-width:680px; margin:0 auto 0.8rem;">
+            <p>
+              By training on 1024-frame sequences, <span class="dnerf">TAPNext++</span>
+              sustains reliable tracks over long durations where competing online trackers
+              drift or lose points entirely.
+            </p>
+          </div>
+
+          <div class="tabs is-centered video-tabs">
+            <ul>
+              <li class="is-active"><a class="tab-btn" data-group="cmp-longterm" data-target="clt-clock">Clock</a></li>
+              <li><a class="tab-btn" data-group="cmp-longterm" data-target="clt-fire">Fire Extinguisher</a></li>
+            </ul>
+          </div>
+
+          <div id="clt-clock" class="tab-panel" data-group="cmp-longterm">
+            <div class="comparison-grid">
+              <div class="comp-cell ours">
+                <div class="comp-label ours">TAPNext++ (Ours)</div>
+                <video autoplay muted loop playsinline><source src="static/videos/comparison/tapnextpp/clock.mp4" type="video/mp4"></video>
+              </div>
+              <div class="comp-cell">
+                <div class="comp-label">CoTracker3</div>
+                <video autoplay muted loop playsinline><source src="static/videos/comparison/cotracker/clock.mp4" type="video/mp4"></video>
+              </div>
+              <div class="comp-cell">
+                <div class="comp-label">Track-On</div>
+                <video autoplay muted loop playsinline><source src="static/videos/comparison/trackon/clock.mp4" type="video/mp4"></video>
+              </div>
+              <div class="comp-cell">
+                <div class="comp-label">BootsTAPNext</div>
+                <video autoplay muted loop playsinline><source src="static/videos/comparison/bootstapnext/clock.mp4" type="video/mp4"></video>
+              </div>
+            </div>
+            <p class="video-label">Both clock hands tracked over 1000+ frames. TAPNext++ maintains reliable tracks throughout the full sequence, while competing methods lose the hands well before the end.</p>
+          </div>
+
+          <div id="clt-fire" class="tab-panel is-hidden" data-group="cmp-longterm">
+            <div class="comparison-grid">
+              <div class="comp-cell ours">
+                <div class="comp-label ours">TAPNext++ (Ours)</div>
+                <video autoplay muted loop playsinline><source src="static/videos/comparison/tapnextpp/fire_ext.mp4" type="video/mp4"></video>
+              </div>
+              <div class="comp-cell">
+                <div class="comp-label">CoTracker3</div>
+                <video autoplay muted loop playsinline><source src="static/videos/comparison/cotracker/fire_ext.mp4" type="video/mp4"></video>
+              </div>
+              <div class="comp-cell">
+                <div class="comp-label">Track-On</div>
+                <video autoplay muted loop playsinline><source src="static/videos/comparison/trackon/fire_ext.mp4" type="video/mp4"></video>
+              </div>
+              <div class="comp-cell">
+                <div class="comp-label">BootsTAPNext</div>
+                <video autoplay muted loop playsinline><source src="static/videos/comparison/bootstapnext/fire_ext.mp4" type="video/mp4"></video>
+              </div>
+            </div>
+            <p class="video-label">Surface points tracked on a wall and a fire extinguisher over a long indoor sequence. Competing methods fail at re-detecting the initial scene.</p>
+          </div>
+        </div><!-- /strength-group -->
+
+        <!-- ────────────────────────────────────────────
+             Strength 2 · Re-Detection & Re-Entry
+             ──────────────────────────────────────────── -->
+        <div class="strength-group" style="margin-top: 2.5rem;">
+          <div class="strength-header">
+            <span class="strength-number">2</span>
+            <h3 class="title is-5 strength-title">Re-Detection &amp; Re-Entry</h3>
+          </div>
+          <div class="content has-text-justified" style="max-width:680px; margin:0 auto 0.8rem;">
+            <p>
+              Roll augmentation forces the model to re-detect points that leave and
+              re-enter the frame. Other online trackers consistently fail at this —
+              they rely on spatial proximity rather than appearance matching.
+            </p>
+          </div>
+
+          <div class="tabs is-centered video-tabs">
+            <ul>
+              <li class="is-active"><a class="tab-btn" data-group="cmp-redetect" data-target="crd-juggling">Juggling</a></li>
+              <li><a class="tab-btn" data-group="cmp-redetect" data-target="crd-tesa">Tesa</a></li>
+              <li><a class="tab-btn" data-group="cmp-redetect" data-target="crd-cups">Cups &amp; Balls</a></li>
+            </ul>
+          </div>
+
+          <div id="crd-juggling" class="tab-panel" data-group="cmp-redetect">
+            <div class="comparison-grid">
+              <div class="comp-cell ours">
+                <div class="comp-label ours">TAPNext++ (Ours)</div>
+                <video autoplay muted loop playsinline><source src="static/videos/comparison/tapnextpp/juggling.mp4" type="video/mp4"></video>
+              </div>
+              <div class="comp-cell">
+                <div class="comp-label">CoTracker3</div>
+                <video autoplay muted loop playsinline><source src="static/videos/comparison/cotracker/juggling.mp4" type="video/mp4"></video>
+              </div>
+              <div class="comp-cell">
+                <div class="comp-label">Track-On</div>
+                <video autoplay muted loop playsinline><source src="static/videos/comparison/trackon/juggling.mp4" type="video/mp4"></video>
+              </div>
+              <div class="comp-cell">
+                <div class="comp-label">BootsTAPNext</div>
+                <video autoplay muted loop playsinline><source src="static/videos/comparison/bootstapnext/juggling.mp4" type="video/mp4"></video>
+              </div>
+            </div>
+            <p class="video-label">Juggling balls repeatedly leave and re-enter the frame. TAPNext++, trained with roll augmentation, reliably re-detects all query points on every re-entry. Competing methods fail to recover once points leave the field of view too many times.</p>
+          </div>
+
+          <div id="crd-tesa" class="tab-panel is-hidden" data-group="cmp-redetect">
+            <div class="comparison-grid">
+              <div class="comp-cell ours">
+                <div class="comp-label ours">TAPNext++ (Ours)</div>
+                <video autoplay muted loop playsinline><source src="static/videos/comparison/tapnextpp/tesa.mp4" type="video/mp4"></video>
+              </div>
+              <div class="comp-cell">
+                <div class="comp-label">CoTracker3</div>
+                <video autoplay muted loop playsinline><source src="static/videos/comparison/cotracker/tesa.mp4" type="video/mp4"></video>
+              </div>
+              <div class="comp-cell">
+                <div class="comp-label">Track-On</div>
+                <video autoplay muted loop playsinline><source src="static/videos/comparison/trackon/tesa.mp4" type="video/mp4"></video>
+              </div>
+              <div class="comp-cell">
+                <div class="comp-label">BootsTAPNext</div>
+                <video autoplay muted loop playsinline><source src="static/videos/comparison/bootstapnext/tesa.mp4" type="video/mp4"></video>
+              </div>
+            </div>
+            <p class="video-label">A tape dispenser moved in and out of the frame. TAPNext++ correctly re-localizes tracked points after re-entry using appearance-based matching rather than spatial proximity.</p>
+          </div>
+
+          <div id="crd-cups" class="tab-panel is-hidden" data-group="cmp-redetect">
+            <div class="comparison-grid">
+              <div class="comp-cell ours">
+                <div class="comp-label ours">TAPNext++ (Ours)</div>
+                <video autoplay muted loop playsinline><source src="static/videos/comparison/tapnextpp/cups_and_balls.mp4" type="video/mp4"></video>
+              </div>
+              <div class="comp-cell">
+                <div class="comp-label">CoTracker3</div>
+                <video autoplay muted loop playsinline><source src="static/videos/comparison/cotracker/cups_and_balls.mp4" type="video/mp4"></video>
+              </div>
+              <div class="comp-cell">
+                <div class="comp-label">Track-On</div>
+                <video autoplay muted loop playsinline><source src="static/videos/comparison/trackon/cups_and_balls.mp4" type="video/mp4"></video>
+              </div>
+              <div class="comp-cell">
+                <div class="comp-label">BootsTAPNext</div>
+                <video autoplay muted loop playsinline><source src="static/videos/comparison/bootstapnext/cups_and_balls.mp4" type="video/mp4"></video>
+              </div>
+            </div>
+            <p class="video-label">The classic cups and balls game. While TAPNext++ is not able to track the ball correctly under occlusion, it is the only method able to re-detect the ball after the cup is lifted.</p>
+          </div>
+        </div><!-- /strength-group -->
+
+        <!-- ────────────────────────────────────────────
+             Strength 3 · Occlusion Robustness
+             ──────────────────────────────────────────── -->
+        <div class="strength-group" style="margin-top: 2.5rem;">
+          <div class="strength-header">
+            <span class="strength-number">3</span>
+            <h3 class="title is-5 strength-title">Occlusion Robustness</h3>
+          </div>
+          <div class="content has-text-justified" style="max-width:680px; margin:0 auto 0.8rem;">
+            <p>
+              Weighted supervision of occluded points provides a soft learning signal
+              that keeps predicted locations plausible during occlusion, enabling
+              accurate re-localization when the point becomes visible again.
+            </p>
+          </div>
+
+          <div class="tabs is-centered video-tabs">
+            <ul>
+              <li class="is-active"><a class="tab-btn" data-group="cmp-occlusion" data-target="coc-hand">Hiding Hand</a></li>
+              <li><a class="tab-btn" data-group="cmp-occlusion" data-target="coc-postit">Post-It</a></li>
+            </ul>
+          </div>
+
+          <div id="coc-hand" class="tab-panel" data-group="cmp-occlusion">
+            <div class="comparison-grid">
+              <div class="comp-cell ours">
+                <div class="comp-label ours">TAPNext++ (Ours)</div>
+                <video autoplay muted loop playsinline><source src="static/videos/comparison/tapnextpp/hiding_hand.mp4" type="video/mp4"></video>
+              </div>
+              <div class="comp-cell">
+                <div class="comp-label">CoTracker3</div>
+                <video autoplay muted loop playsinline><source src="static/videos/comparison/cotracker/hiding_hand.mp4" type="video/mp4"></video>
+              </div>
+              <div class="comp-cell">
+                <div class="comp-label">Track-On</div>
+                <video autoplay muted loop playsinline><source src="static/videos/comparison/trackon/hiding_hand.mp4" type="video/mp4"></video>
+              </div>
+              <div class="comp-cell">
+                <div class="comp-label">BootsTAPNext</div>
+                <video autoplay muted loop playsinline><source src="static/videos/comparison/bootstapnext/hiding_hand.mp4" type="video/mp4"></video>
+              </div>
+            </div>
+            <p class="video-label">A hand being hidden behind a monitor. TAPNext++ maintains plausible location estimates during occlusion — enabled by weighted occluded-point supervision — and re-localizes precisely when the hand reappears.</p>
+          </div>
+
+          <div id="coc-postit" class="tab-panel is-hidden" data-group="cmp-occlusion">
+            <div class="comparison-grid">
+              <div class="comp-cell ours">
+                <div class="comp-label ours">TAPNext++ (Ours)</div>
+                <video autoplay muted loop playsinline><source src="static/videos/comparison/tapnextpp/postit.mp4" type="video/mp4"></video>
+              </div>
+              <div class="comp-cell">
+                <div class="comp-label">CoTracker3</div>
+                <video autoplay muted loop playsinline><source src="static/videos/comparison/cotracker/postit.mp4" type="video/mp4"></video>
+              </div>
+              <div class="comp-cell">
+                <div class="comp-label">Track-On</div>
+                <video autoplay muted loop playsinline><source src="static/videos/comparison/trackon/postit.mp4" type="video/mp4"></video>
+              </div>
+              <div class="comp-cell">
+                <div class="comp-label">BootsTAPNext</div>
+                <video autoplay muted loop playsinline><source src="static/videos/comparison/bootstapnext/postit.mp4" type="video/mp4"></video>
+              </div>
+            </div>
+            <p class="video-label">Post-it note partially occluded by a monitor. TAPNext++ predicted correct track positions even during occlusion.</p>
+          </div>
+        </div><!-- /strength-group -->
+
+        <p class="video-label" style="margin-top: 1.5rem;">
+          All panels show the same input sequence tracked independently by each method.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ===== DAVIS COMPARISON ===== -->
+<section class="section alt-bg" style="padding-top: 2.5rem; padding-bottom: 2.5rem;">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-full-width">
+        <h2 class="title is-3">Qualitative Results on TAP-Vid-DAVIS</h2>
+        <div class="content has-text-justified" style="max-width:750px; margin:0 auto 1.5rem;">
+          <p>
+            We show qualitative tracking results on a diverse selection of TAP-Vid-DAVIS
+            sequences. TAPNext++ runs frame-by-frame at up to <strong>562 FPS</strong>
+            (256 query points, window mode on H100), achieving the best speed-accuracy
+            trade-off among all online methods.
+          </p>
+        </div>
+
+        <div class="davis-grid">
+          <div class="davis-cell">
+            <video autoplay muted loop playsinline>
+              <source src="static/videos/davis/india.mp4" type="video/mp4">
+            </video>
+            <p class="video-label">india</p>
+          </div>
+          <div class="davis-cell">
+            <video autoplay muted loop playsinline>
+              <source src="static/videos/davis/dance-jump.mp4" type="video/mp4">
+            </video>
+            <p class="video-label">dance-jump</p>
+          </div>
+          <div class="davis-cell">
+            <video autoplay muted loop playsinline>
+              <source src="static/videos/davis/bmx-bumps.mp4" type="video/mp4">
+            </video>
+            <p class="video-label">bmx-bumps</p>
+          </div>
+          <div class="davis-cell">
+            <video autoplay muted loop playsinline>
+              <source src="static/videos/davis/bus.mp4" type="video/mp4">
+            </video>
+            <p class="video-label">bus</p>
+          </div>
+          <div class="davis-cell">
+            <video autoplay muted loop playsinline>
+              <source src="static/videos/davis/car-shadow.mp4" type="video/mp4">
+            </video>
+            <p class="video-label">car-shadow</p>
+          </div>
+          <div class="davis-cell">
+            <video autoplay muted loop playsinline>
+              <source src="static/videos/davis/drift-turn.mp4" type="video/mp4">
+            </video>
+            <p class="video-label">drift-turn</p>
+          </div>
+          <div class="davis-cell">
+            <video autoplay muted loop playsinline>
+              <source src="static/videos/davis/motocross-jump.mp4" type="video/mp4">
+            </video>
+            <p class="video-label">motocross-jump</p>
+          </div>
+          <div class="davis-cell">
+            <video autoplay muted loop playsinline>
+              <source src="static/videos/davis/parkour.mp4" type="video/mp4">
+            </video>
+            <p class="video-label">parkour</p>
+          </div>
+          <div class="davis-cell">
+            <video autoplay muted loop playsinline>
+              <source src="static/videos/davis/scooter-gray.mp4" type="video/mp4">
+            </video>
+            <p class="video-label">scooter-gray</p>
+          </div>
+          <div class="davis-cell">
+            <video autoplay muted loop playsinline>
+              <source src="static/videos/davis/train.mp4" type="video/mp4">
+            </video>
+            <p class="video-label">train</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ===== KUBRIC-1024 ===== -->
+<section class="section">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-full-width">
+        <h2 class="title is-3">Kubric-1024 Dataset</h2>
+        <div class="content has-text-justified" style="max-width:750px; margin:0 auto 1.5rem;">
+          <p>
+            We introduce <strong>Kubric-1024</strong>, a new large-scale synthetic dataset
+            of 10,000 videos at 1024 frames each. Each scene uses a random HDRI from
+            Polyhaven for lighting and populates 10–20 static and 1–10 dynamic objects
+            from the Google Scanned Objects dataset. A physics-based velocity-bump
+            mechanism keeps objects in motion throughout long sequences to prevent
+            scenes from becoming static.
+            Training on Kubric-1024 in combination with PointOdyssey yields the best
+            overall performance across all benchmarks.
+          </p>
+        </div>
+
+        <div class="video-grid-4">
+          <div class="video-cell">
+            <video autoplay muted loop playsinline>
+              <source src="static/videos/kubric/kubric-1024-1.mp4" type="video/mp4">
+            </video>
+          </div>
+          <div class="video-cell">
+            <video autoplay muted loop playsinline>
+              <source src="static/videos/kubric/kubric1024-2.mp4" type="video/mp4">
+            </video>
+          </div>
+          <div class="video-cell">
+            <video autoplay muted loop playsinline>
+              <source src="static/videos/kubric/kubric1024-3.mp4" type="video/mp4">
+            </video>
+          </div>
+          <div class="video-cell">
+            <video autoplay muted loop playsinline>
+              <source src="static/videos/kubric/kubric1024-4.mp4" type="video/mp4">
+            </video>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ===== HIGH-RESOLUTION ===== -->
+<section class="section alt-bg" style="padding-top: 2.5rem; padding-bottom: 2.5rem;">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths">
+        <h2 class="title is-3">High-Resolution Tracking</h2>
+        <div class="content has-text-justified" style="max-width:750px; margin:0 auto 1.5rem;">
+          <p>
+            TAPNext uses learned 2D positional embeddings initialized for 256&times;256
+            inputs. To support 512&times;512 inference, we bicubically interpolate these
+            embeddings to the larger spatial grid and finetune the model at
+            512&times;512. The resulting variant improves performance on RoboTAP
+            (AJ <strong>66.0</strong>), approaching CoTracker3 (66.4), while retaining
+            the low memory and compute footprint of the base model.
+          </p>
+        </div>
+        <video autoplay muted loop playsinline
+               style="width:60%; display:block; margin:0 auto; border-radius:10px;
+                      box-shadow:0 4px 20px rgba(66,134,244,0.18);">
+          <source src="static/videos/custom/tesa512x512.mp4" type="video/mp4">
+        </video>
+        <p class="video-label" style="margin-top: 10px;">
+          Tape-dispenser sequence tracked at 512×512 resolution. The denser patch grid
+          captures fine surface texture, enabling precise localisation of small features
+          throughout the sequence.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ===== RE-DETECTION METRIC ===== -->
+<section class="section">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths">
+        <h2 class="title is-3">Re-Detection Average Jaccard (AJ<sub>RD</sub>)</h2>
+        <div class="content has-text-justified">
+          <p>
+            Existing TAP metrics such as Average Jaccard (AJ) and Occlusion Accuracy (OA)
+            average performance over all frames, including many frames where a point is
+            stably visible. This obscures failures specifically on <em>re-detection</em> —
+            tracking a point correctly after it re-appears.
+          </p>
+          <p>
+            We define AJ<sub>RD</sub> as the mean AJ over eligible reappearance events,
+            where an event is <em>eligible</em> if its invisibility duration
+            d<sub>i</sub> exceeds all previous disappearances for that track (i.e., it
+            sets a new record). This focuses evaluation on progressively harder
+            re-detections and is insensitive to trivially short occlusions.
+          </p>
+          <p>
+            We report AJ<sub>RD</sub> as the mean over d<sub>min</sub> ∈ {1, 4, 16, 64, 256}.
+            On RoboTAP, TAPNext++ achieves state-of-the-art AJ<sub>RD</sub> of
+            <strong>54.6</strong> (512&times;512 model) and <strong>52.4</strong>
+            (256&times;256 model), compared to 51.8 for CoTracker3 and 47.1 for
+            BootsTAPNext — a consequence of our roll augmentation directly targeting
+            this failure mode.
+          </p>
+        </div>
+
+        <!-- Metric highlights -->
+        <div class="columns is-centered" style="margin-top: 1.5rem;">
+          <div class="column is-narrow">
+            <div class="metric-box">
+              <div class="metric-value">54.6</div>
+              <div class="metric-label">AJ<sub>RD</sub> on RoboTAP<br><small>(SOTA)</small></div>
+            </div>
+          </div>
+          <div class="column is-narrow">
+            <div class="metric-box">
+              <div class="metric-value">66.6</div>
+              <div class="metric-label">AJ on DAVIS<br><small>(SOTA online)</small></div>
+            </div>
+          </div>
+          <div class="column is-narrow">
+            <div class="metric-box">
+              <div class="metric-value">562 FPS</div>
+              <div class="metric-label">Throughput<br><small>(256 pts, H100)</small></div>
+            </div>
+          </div>
+          <div class="column is-narrow">
+            <div class="metric-box">
+              <div class="metric-value">72.2</div>
+              <div class="metric-label">Mean δ<sup>avg</sup><br><small>(best across all benchmarks)</small></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ===== QUANTITATIVE RESULTS ===== -->
+<section class="section alt-bg" style="padding-top: 2.5rem; padding-bottom: 2.5rem;">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-full-width">
+        <h2 class="title is-3">Quantitative Results</h2>
+        <div class="content" style="max-width:750px; margin: 0 auto 1.5rem;">
+          <p class="has-text-justified">
+            We compare against state-of-the-art online tracking methods across four
+            standard TAP benchmarks. TAPNext++ achieves the highest mean δ<sup>avg</sup>
+            (72.2) across all benchmarks, state-of-the-art AJ on DAVIS and RGB-Stacking,
+            and the best AJ<sub>RD</sub> on both PointOdyssey and RoboTAP — all while
+            running at the lowest latency (5.18 ms/frame for 256 query points).
+          </p>
+        </div>
+
+        <div style="overflow-x: auto;">
+          <table class="results-table" style="min-width: 700px;">
+            <thead>
+              <tr>
+                <th class="method-name" rowspan="2">Method</th>
+                <th rowspan="2">Res.</th>
+                <th colspan="3">PointOdyssey</th>
+                <th colspan="3">DAVIS</th>
+                <th colspan="3">RGB-Stacking</th>
+                <th colspan="4">RoboTAP</th>
+                <th rowspan="2">Mean δ<sup>avg</sup>↑</th>
+              </tr>
+              <tr>
+                <th>δ<sup>avg</sup>↑</th>
+                <th>Surv.↑</th>
+                <th>AJ<sub>RD</sub>↑</th>
+                <th>AJ↑</th>
+                <th>δ<sup>avg</sup>↑</th>
+                <th>OA↑</th>
+                <th>AJ↑</th>
+                <th>δ<sup>avg</sup>↑</th>
+                <th>OA↑</th>
+                <th>AJ↑</th>
+                <th>δ<sup>avg</sup>↑</th>
+                <th>OA↑</th>
+                <th>AJ<sub>RD</sub>↑</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="method-name">PIPsv2</td>
+                <td>256&times;256</td>
+                <td>21.5</td><td>38.1</td><td>—</td>
+                <td>—</td><td>63.4</td><td>—</td>
+                <td>—</td><td>58.5</td><td>—</td>
+                <td>—</td><td>63.0</td><td>—</td><td>—</td>
+                <td>51.6</td>
+              </tr>
+              <tr>
+                <td class="method-name">CoTracker2</td>
+                <td>384&times;512</td>
+                <td>30.2</td><td>55.2</td><td>3.9</td>
+                <td>62.2</td><td>75.7</td><td>89.3</td>
+                <td>67.4</td><td>78.9</td><td>85.2</td>
+                <td>58.6</td><td>70.6</td><td>87.0</td><td>33.3</td>
+                <td>64.0</td>
+              </tr>
+              <tr>
+                <td class="method-name">CoTracker3 (Online)</td>
+                <td>384&times;512</td>
+                <td class="second-best">44.5</td><td class="second-best">56.3</td><td class="second-best">21.8</td>
+                <td>63.8</td><td>76.3</td><td>90.2</td>
+                <td class="second-best">71.7</td><td>83.6</td><td>90.2</td>
+                <td class="best">66.4</td><td class="best">78.8</td><td class="best">90.8</td><td class="second-best">51.8</td>
+                <td class="second-best">70.2</td>
+              </tr>
+              <tr>
+                <td class="method-name">Track-On</td>
+                <td>384&times;512</td>
+                <td>35.4</td><td>47.5</td><td>9.9</td>
+                <td>65.0</td><td>78.0</td><td>90.8</td>
+                <td>71.4</td><td class="best">85.2</td><td class="second-best">91.7</td>
+                <td class="second-best">63.5</td><td class="second-best">76.4</td><td>89.4</td><td>44.4</td>
+                <td>68.5</td>
+              </tr>
+              <tr>
+                <td class="method-name">BootsTAPNext-B</td>
+                <td>256&times;256</td>
+                <td>9.9</td><td>13.0</td><td>0.6</td>
+                <td class="second-best">65.2</td><td class="second-best">78.5</td><td class="second-best">91.2</td>
+                <td>66.2</td><td>78.3</td><td>86.8</td>
+                <td>62.6</td><td>74.3</td><td>88.4</td><td>47.1</td>
+                <td>62.3</td>
+              </tr>
+              <tr class="ours-row">
+                <td class="method-name" style="color:#c0392b; font-weight:700;">TAPNext++ (256)</td>
+                <td>256&times;256</td>
+                <td class="best">52.6</td><td class="best">67.9</td><td class="best">23.3</td>
+                <td class="best">66.6</td><td class="best">79.9</td><td class="best">92.1</td>
+                <td class="best">73.4</td><td class="second-best">84.8</td><td class="best">95.1</td>
+                <td>61.1</td><td>75.2</td><td class="second-best">89.6</td><td class="best">52.4</td>
+                <td class="best">72.2</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="video-label" style="margin-top: 8px;">
+          Table 1: Online tracking comparison across four benchmarks.
+          <strong style="color:#c0392b;">Bold</strong> = best, <span style="text-decoration:underline;">underlined</span> = second best.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ===== BIBTEX ===== -->
+<section class="section">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths">
+        <h2 class="title is-3">BibTeX</h2>
+        <div class="content has-text-left">
+          <pre><code>@inproceedings{tapnextpp2026,
+  title     = {{TAPNext++}: What's Next for Tracking Any Point ({TAP})?},
+  author    = {Sebastian Jung and Artem Zholus and Martin Sundermeyer and Carl Doersch and Ross Goroshin and David Joseph Tan and Sarath Chandar and Rudolph Triebel and Federico Tombari},
+  booktitle = {Proceedings of the IEEE/CVF Conference on Computer Vision
+               and Pattern Recognition (CVPR) -- Findings},
+  year      = {2026},
+}</code></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ===== FOOTER ===== -->
+<footer class="footer">
+  <div class="container">
+    <div class="columns is-centered">
+      <div class="column is-8">
+        <div class="content has-text-centered">
+          <div class="content has-text-centered" style="margin-bottom: 1rem;">
+            <a class="icon-link" href="#" title="Paper PDF">
+              <i class="fas fa-file-pdf"></i>
+            </a>
+            &nbsp;&nbsp;
+            <a class="icon-link" href="https://github.com/google-deepmind/tapnet" title="GitHub" target="_blank" rel="noopener">
+              <i class="fab fa-github"></i>
+            </a>
+          </div>
+          <p>
+            This website is licensed under a
+            <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/"
+               target="_blank" rel="noopener">
+              Creative Commons Attribution-ShareAlike 4.0 International License
+            </a>.
+          </p>
+          <p>
+            The website template is based on
+            <a href="https://github.com/nerfies/nerfies.github.io" target="_blank" rel="noopener">Nerfies</a>,
+            adapted to match the
+            <a href="https://tap-next.github.io/" target="_blank" rel="noopener">TAP paper family</a> style.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+
+<!-- ===== SCRIPTS ===== -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/Wikiki/bulma-carousel@master/dist/js/bulma-carousel.min.js"></script>
+<script src="static/js/index.js"></script>
+
+</body>
+</html>
