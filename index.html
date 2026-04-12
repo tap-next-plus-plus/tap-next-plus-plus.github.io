@@ -799,7 +799,7 @@
         <h2 class="title is-3">Quantitative Results</h2>
         <div class="content" style="max-width:750px; margin: 0 auto 1.5rem;">
           <p class="has-text-justified">
-            We compare against state-of-the-art online tracking methods across four
+            We compare against state-of-the-art online tracking methods across five
             standard TAP benchmarks. TAPNext++ achieves the highest mean δ<sup>avg</sup>
             (72.2) across all benchmarks, state-of-the-art AJ on DAVIS and RGB-Stacking,
             and the best AJ<sub>RD</sub> on both PointOdyssey and RoboTAP — all while
@@ -808,7 +808,7 @@
         </div>
 
         <div style="overflow-x: auto;">
-          <table class="results-table" style="min-width: 700px;">
+          <table class="results-table" style="min-width: 900px;">
             <thead>
               <tr>
                 <th class="method-name" rowspan="2">Method</th>
@@ -817,6 +817,7 @@
                 <th colspan="3">DAVIS</th>
                 <th colspan="3">RGB-Stacking</th>
                 <th colspan="4">RoboTAP</th>
+                <th colspan="3">Kinetics</th>
                 <th rowspan="2">Mean δ<sup>avg</sup>↑</th>
               </tr>
               <tr>
@@ -833,6 +834,9 @@
                 <th>δ<sup>avg</sup>↑</th>
                 <th>OA↑</th>
                 <th>AJ<sub>RD</sub>↑</th>
+                <th>AJ↑</th>
+                <th>δ<sup>avg</sup>↑</th>
+                <th>OA↑</th>
               </tr>
             </thead>
             <tbody>
@@ -843,6 +847,7 @@
                 <td>—</td><td>63.4</td><td>—</td>
                 <td>—</td><td>58.5</td><td>—</td>
                 <td>—</td><td>63.0</td><td>—</td><td>—</td>
+                <td>—</td><td>—</td><td>—</td>
                 <td>51.6</td>
               </tr>
               <tr>
@@ -852,6 +857,7 @@
                 <td>62.2</td><td>75.7</td><td>89.3</td>
                 <td>67.4</td><td>78.9</td><td>85.2</td>
                 <td>58.6</td><td>70.6</td><td>87.0</td><td>33.3</td>
+                <td>48.8</td><td>64.5</td><td>85.8</td>
                 <td>64.0</td>
               </tr>
               <tr>
@@ -861,7 +867,8 @@
                 <td>63.8</td><td>76.3</td><td>90.2</td>
                 <td class="second-best">71.7</td><td>83.6</td><td>90.2</td>
                 <td class="best">66.4</td><td class="best">78.8</td><td class="best">90.8</td><td class="second-best">51.8</td>
-                <td class="second-best">70.2</td>
+                <td class="second-best">55.8</td><td>68.5</td><td class="second-best">88.3</td>
+                <td class="second-best">70.3</td>
               </tr>
               <tr>
                 <td class="method-name">Track-On</td>
@@ -870,6 +877,7 @@
                 <td>65.0</td><td>78.0</td><td>90.8</td>
                 <td>71.4</td><td class="best">85.2</td><td class="second-best">91.7</td>
                 <td class="second-best">63.5</td><td class="second-best">76.4</td><td>89.4</td><td>44.4</td>
+                <td>53.9</td><td>67.3</td><td>87.8</td>
                 <td>68.5</td>
               </tr>
               <tr>
@@ -879,6 +887,7 @@
                 <td class="second-best">65.2</td><td class="second-best">78.5</td><td class="second-best">91.2</td>
                 <td>66.2</td><td>78.3</td><td>86.8</td>
                 <td>62.6</td><td>74.3</td><td>88.4</td><td>47.1</td>
+                <td class="best">57.3</td><td class="best">70.6</td><td>87.4</td>
                 <td>62.3</td>
               </tr>
               <tr class="ours-row">
@@ -888,13 +897,14 @@
                 <td class="best">66.6</td><td class="best">79.9</td><td class="best">92.1</td>
                 <td class="best">73.4</td><td class="second-best">84.8</td><td class="best">95.1</td>
                 <td>61.1</td><td>75.2</td><td class="second-best">89.6</td><td class="best">52.4</td>
+                <td>54.4</td><td class="second-best">68.7</td><td class="best">89.0</td>
                 <td class="best">72.2</td>
               </tr>
             </tbody>
           </table>
         </div>
         <p class="video-label" style="margin-top: 8px;">
-          Table 1: Online tracking comparison across four benchmarks.
+          Table 1: Online tracking comparison across five benchmarks.
           <strong style="color:#c0392b;">Bold</strong> = best, <span style="text-decoration:underline;">underlined</span> = second best.
         </p>
       </div>
