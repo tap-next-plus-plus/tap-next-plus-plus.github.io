@@ -66,8 +66,8 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
 
-  // On initial load: play videos in all visible tab panels (already at t=0)
+  // On initial load: reset to t=0 so autoplay stagger doesn't cause desync
   document.querySelectorAll('.tab-panel:not(.is-hidden)').forEach(function(p) {
-    playVideos(p, false);
+    playVideos(p, true);
   });
 });
